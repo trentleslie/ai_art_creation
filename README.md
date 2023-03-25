@@ -18,7 +18,8 @@ ai_art_creation/
 │   │   ├── images_raw/
 │   │   ├── __init__.py
 │   │   ├── lighting.py
-│   │   └── topaz_gigapixel.py
+│   │   ├── topaz_gigapixel.py
+│   │   └── transparent_png.py
 │   │
 │   ├── store_integration/
 │   │   ├── __init__.py

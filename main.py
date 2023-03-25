@@ -1,12 +1,12 @@
 # main.py
 
 from ai_art_creation.api import chatgpt, dall_e
-from ai_art_creation.image_processing import csv_merge
+#from ai_art_creation.image_processing import csv_merge
 #from ai_art_creation.image_processing import lighting, topaz_gigapixel
 #from ai_art_creation.store_integration import etsy, redbubble
 
 def main():
-    for i in range(1):
+    for i in range(2):
         # Generate prompts for DALL-E
         prompts = chatgpt.generate_prompts(how_many=3)
         

@@ -42,7 +42,8 @@ def generate_images(prompts):
             objects.append(word2)
     
     # add 20 empty strings to the end of the list
-    objects += [""] * 50
+    objects += [""] * 30
+    objects += ["irregular white #FFFFFF border"] * 20
     
     # Create an empty list to store the image paths
     image_paths = []
@@ -70,7 +71,7 @@ def generate_images(prompts):
 
         try:
 
-            modifiers = 'beautiful composition, well framed, in frame, ' + random.choice(objects)  
+            modifiers = 'balanced composition, ' + random.choice(objects)  
 
             # Set prompt and output directory
             PROMPT = PROMPT + ', ' + modifiers
@@ -108,7 +109,7 @@ def generate_images(prompts):
             img_dict["ID"].append(timestamp)
             img_dict["Title"].append(get_title(PROMPT).replace('"', ''))
             img_dict["Description"].append(get_description(aspect_ratio_pattern.sub("", PROMPT)))
-            img_dict["Tags"].append(get_tags(aspect_ratio_pattern.sub("", PROMPT)).replace("\n", ", ").replace("[0-9]", "")).replace("[0-9]\.", ""))
+            img_dict["Tags"].append(get_tags(aspect_ratio_pattern.sub("", PROMPT)).replace("\n", ", ").replace("[0-9]", "").replace("[0-9]\.", ""))
             img_dict["Price"].append(round(random.uniform(2.00, 8.00), 2))
             img_dict["Image Path"].append(r'C:\Users\trent\OneDrive\Documents\GitHub\ai_art_creation\ai_art_creation\image_processing\images_processed' + '\\' + timestamp + '.png')
             img_dict["Prompt"].append(PROMPT)

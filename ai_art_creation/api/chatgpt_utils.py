@@ -8,7 +8,7 @@ def get_title(prompt):
 
     #build messages payload
     messages = [
-        {"role": "system", "content": "You are a world class search engine optimization expert. Avoiding anything about AR or aspect ratio, please write a short title less than 10 words of the following digital art design description:"},
+        {"role": "system", "content": "You are a world class search engine optimization expert. Avoiding anything about AR or aspect ratio, please write a short title less than 50 characters of the following digital art design description:"},
         {"role": "user", "content": "Descriptive title"},
         {"role": "assistant", "content": "On what topic?"},
         {"role": "user", "content": prompt}
@@ -36,7 +36,7 @@ def get_description(prompt):
 
     #build messages payload
     messages = [
-        {"role": "system", "content": "You are a world class search engine optimization expert. Avoiding anything about AR or aspect ratio, please write a short description less than 200 words of the following digital art design description:"},
+        {"role": "system", "content": "You are a world class search engine optimization expert. Avoiding anything about AR or aspect ratio, please write a short description less than 200 characters of the following digital art design description:"},
         {"role": "user", "content": "Casual description"},
         {"role": "assistant", "content": "On what topic?"},
         {"role": "user", "content": prompt}
@@ -64,7 +64,7 @@ def get_tags(prompt):
 
     #build messages payload
     messages = [
-        {"role": "system", "content": "You are a world class search engine optimization expert. Avoiding anything about AR or aspect ratio, please provide only 15 tags separated by commas (no numbered lists, no newlines) of the following digital art design description:"},
+        {"role": "system", "content": "You are a world class search engine optimization expert. Avoiding anything about AR or aspect ratio, please provide 25 tags separated by commas (no numbered lists, no newlines) of the following digital art design description:"},
         {"role": "user", "content": "Casual description"},
         {"role": "assistant", "content": "On what topic?"},
         {"role": "user", "content": prompt}
