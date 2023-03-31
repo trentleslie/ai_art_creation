@@ -9,15 +9,21 @@ def fill_shape(image, polygon_coords, color=(255, 255, 254)):
     draw = ImageDraw.Draw(mask)
     draw.polygon(polygon_coords, fill=(255, 255, 255, 255))
 
-    # Fill in any white pixels within the shape with the specified color
-    pixels = mask.load()
-    for x in range(mask.width):
-        for y in range(mask.height):
-            if pixels[x, y] == (255, 255, 255, 255):
+    # Fill in any white pixels outside the shape with (255, 255, 255)
+    pixels = image.load()
+    for x in range(image.width):
+        for y in range(image.height):
+            if (x, y) not in polygon_coords:
+                pixels[x, y] = (255, 255, 255, 0)
+            elif (x, y) in polygon_coords and pixels[x, y] == (255, 255, 255):
                 pixels[x, y] = color
 
-    # Paste the mask onto the original image
-    image.paste(mask, (0, 0), mask)
+    # Fill in any white pixels inside the shape with (255, 255, 254)
+    #mask_pixels = mask.load()
+    #for x in range(mask.width):
+    #    for y in range(mask.height):
+    #        if mask_pixels[x, y] == (255, 255, 255, 255) and pixels[x, y] == (255, 255, 255):
+    #            pixels[x, y] = color
 
     # Return the modified image
     return image
@@ -61,23 +67,27 @@ def rounded_corners_img(image_path, radius_fraction=0.15):
 def circle_img(image_path):
     return rounded_corners_img(image_path, radius_fraction=0.5)
 
-def symm_triangle_img(image_path):
-    # Open the image file
-    image = Image.open(image_path)
+def triangle_crop(image_path):
+    # Open the image and convert it to RGBA mode (if it's not already)
+    image = Image.open(image_path).convert("RGBA")
+    width, height = image.size
 
-    # Calculate the size of the triangle
-    size = min(image.size)
+    if width != height:
+        raise ValueError("The input image should be square.")
 
-    # Define the coordinates of the triangle
-    x1, y1 = 0, size
-    x2, y2 = size // 2, 0
-    x3, y3 = size, size
+    # Create a new image with the same size and RGBA mode
+    mask = Image.new("RGBA", (width, height))
 
-    # Fill in the triangle with the specified color
-    fill_shape(image, [(x1, y1), (x2, y2), (x3, y3)], color=(255, 255, 255))
+    # Draw a filled white triangle on the mask image
+    draw = ImageDraw.Draw(mask)
+    triangle_points = [(0, height), (width, height), (width // 2, 0)]
+    draw.polygon(triangle_points, fill=(255, 255, 255, 255))
 
-    # Return the modified image
-    return image
+    # Apply the mask to the original image
+    result = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    result.paste(image, mask=mask)
+
+    return result
 
 def random_triangle_img(image_path):
     # Open the image file

@@ -6,7 +6,7 @@ from ai_art_creation.api import chatgpt, dall_e
 #from ai_art_creation.store_integration import etsy, redbubble
 
 def main():
-    for i in range(2):
+    for i in range(3):
         # Generate prompts for DALL-E
         prompts = chatgpt.generate_prompts(how_many=3)
         

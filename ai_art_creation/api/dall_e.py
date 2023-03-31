@@ -25,16 +25,18 @@ def generate_images(prompts):
     objects = []
     while len(objects) < 100:
         # Generate a random word using a list of adjectives, animals, and verbs
-        adj = random.choice(['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange', 'Black', 'White', 'Pink', 'Gray', 'Brown', 'Silver', 'Pink', 'Gray', 'Brown', 'Silver', 'Rainbow'])
+        adj = ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange', 'Black', 'White', 'Pink', 'Gray', 'Brown', 'Silver', 'Pink', 'Gray', 'Brown', 'Silver', 'Rainbow']
         adj2 = ['Pixar style 3D render', 'Bitter', 'Smooth', 'Brave', 'Clever', 'Loud', 'Gentle', 'Silly', 'Sour', 'Shy', 'Wise', 'Fierce', 'Lively', 'Proud', 'Calm', 'Angry', 'Happy', 'Sad', 'Stupid', 'Witty', 'Mysterious', 'Fat', 'Skinny', 'Big', 'Small']
-        animal = random.choice(['Elephant', 'Lion', 'Giraffe', 'Hippo', 'Monkey', 'Kangaroo', 'Tiger', 'Bear', 'Zebra', 'Rhino', 'Crocodile', 'Penguin', 'Ostrich', 'Koala', 'Panda', 'Gorilla', 'Camel', 'Hedgehog', 'Squirrel', 'Fox'])
+        animal = ['Octopus' , 'Elephant', 'Lion', 'Giraffe', 'Hippo', 'Monkey', 'Kangaroo', 'Tiger', 'Bear', 'Zebra', 'Rhino', 'Crocodile', 'Penguin', 'Ostrich', 'Koala', 'Panda', 'Gorilla', 'Camel', 'Hedgehog', 'Squirrel', 'Fox'
+                                ]
         nouns = ['Apple', 'Banana', 'Car', 'Dog', 'Elephant', 'Fish', 'Guitar', 'House', 'Ice Cream', 'Jacket', 'Kangaroo', 'Lion', 'Mountain', 'Nose', 'Orange', 'Pizza', 'Queen', 'Robot', 'Shoe', 'Tree', 'Umbrella', 'Violin', 'Waterfall', 'Xylophone', 'Yacht', 'Zebra', 'Airplane', 'Ball', 'Camera', 'Desk', 'Egg', 'Flower', 'Garden', 'Hat', 'Island', 'Juice', 'Key', 'Laptop', 'Moon', 'Notebook', 'Ocean', 'Pencil', 'Ring', 'Sun', 'Table', 'Unicorn', 'Volcano', 'Whale', 'Yogurt']
-        verb = random.choice(['Run', 'Jump', 'Swim', 'Fly', 'Climb', 'Sleep', 'Eat', 'Sing', 'Dance', 'Play'])
+        verb = ['Run', 'Jump', 'Swim', 'Fly', 'Climb', 'Sleep', 'Eat', 'Sing', 'Dance', 'Play']
         word = random.choice(verb) + 'ing ' + random.choice(adj) + ' ' + random.choice(adj2) + ' ' + random.choice(animal)
         word2 = random.choice(adj) + ' ' + random.choice(adj2) + ' ' + random.choice(nouns)
     
         # Add the word to the list if it's not already in there
         if word not in objects:
+            print(word)
             objects.append(word)
             
         # Add the word to the list if it's not already in there
@@ -43,7 +45,7 @@ def generate_images(prompts):
     
     # add 20 empty strings to the end of the list
     objects += [""] * 30
-    objects += ["irregular white #FFFFFF border"] * 20
+    #objects += ["irregular white #FFFFFF border"] * 20
     
     # Create an empty list to store the image paths
     image_paths = []
@@ -65,7 +67,7 @@ def generate_images(prompts):
                     "Abstract interpretation of sound waves and musical notes in a harmonious color palette with watercolor textures",
                     "A surreal dreamscape merging elements of nature, technology, and human imagination with watercolor textures"
                 ]
-    prompts.extend(forced_prompts)
+    #prompts.extend(forced_prompts)
 
     for PROMPT in prompts:
 
@@ -75,6 +77,7 @@ def generate_images(prompts):
 
             # Set prompt and output directory
             PROMPT = PROMPT + ', ' + modifiers
+            print(PROMPT)
             OUTPUT_DIR = "./ai_art_creation/image_processing/images_raw/"
             #OUTPUT_DIR.mkdir(exist_ok=True)
 
