@@ -17,7 +17,7 @@ def generate_images(prompts):
                 "Title": [],
                 "Description": [],
                 "Tags": [],
-                "Price": [],
+                #"Price": [],
                 "Image Path": [],
                 "Prompt": []}
     
@@ -27,7 +27,7 @@ def generate_images(prompts):
         # Generate a random word using a list of adjectives, animals, and verbs
         adj = ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange', 'Black', 'White', 'Pink', 'Gray', 'Brown', 'Silver', 'Pink', 'Gray', 'Brown', 'Silver', 'Rainbow']
         adj2 = ['Pixar style 3D render', 'Bitter', 'Smooth', 'Brave', 'Clever', 'Loud', 'Gentle', 'Silly', 'Sour', 'Shy', 'Wise', 'Fierce', 'Lively', 'Proud', 'Calm', 'Angry', 'Happy', 'Sad', 'Stupid', 'Witty', 'Mysterious', 'Fat', 'Skinny', 'Big', 'Small']
-        animal = ['Octopus' , 'Elephant', 'Lion', 'Giraffe', 'Hippo', 'Monkey', 'Kangaroo', 'Tiger', 'Bear', 'Zebra', 'Rhino', 'Crocodile', 'Penguin', 'Ostrich', 'Koala', 'Panda', 'Gorilla', 'Camel', 'Hedgehog', 'Squirrel', 'Fox'
+        animal = ['Octopus' , 'Elephant', 'Giraffe', 'Hippo', 'Monkey', 'Kangaroo', 'Tiger', 'Bear', 'Zebra', 'Rhino', 'Crocodile', 'Penguin', 'Ostrich', 'Koala', 'Panda', 'Gorilla', 'Camel', 'Hedgehog', 'Squirrel', 'Fox'
                                 ]
         nouns = ['Apple', 'Banana', 'Car', 'Dog', 'Elephant', 'Fish', 'Guitar', 'House', 'Ice Cream', 'Jacket', 'Kangaroo', 'Lion', 'Mountain', 'Nose', 'Orange', 'Pizza', 'Queen', 'Robot', 'Shoe', 'Tree', 'Umbrella', 'Violin', 'Waterfall', 'Xylophone', 'Yacht', 'Zebra', 'Airplane', 'Ball', 'Camera', 'Desk', 'Egg', 'Flower', 'Garden', 'Hat', 'Island', 'Juice', 'Key', 'Laptop', 'Moon', 'Notebook', 'Ocean', 'Pencil', 'Ring', 'Sun', 'Table', 'Unicorn', 'Volcano', 'Whale', 'Yogurt']
         verb = ['Run', 'Jump', 'Swim', 'Fly', 'Climb', 'Sleep', 'Eat', 'Sing', 'Dance', 'Play']
@@ -36,15 +36,15 @@ def generate_images(prompts):
     
         # Add the word to the list if it's not already in there
         if word not in objects:
-            print(word)
+            #print(word)
             objects.append(word)
             
         # Add the word to the list if it's not already in there
         if word2 not in objects:
             objects.append(word2)
     
-    # add 20 empty strings to the end of the list
-    objects += [""] * 30
+    # add 100 empty strings to the end of the list
+    objects += [""] * 100
     #objects += ["irregular white #FFFFFF border"] * 20
     
     # Create an empty list to store the image paths
@@ -113,7 +113,7 @@ def generate_images(prompts):
             img_dict["Title"].append(get_title(PROMPT).replace('"', ''))
             img_dict["Description"].append(get_description(aspect_ratio_pattern.sub("", PROMPT)))
             img_dict["Tags"].append(get_tags(aspect_ratio_pattern.sub("", PROMPT)).replace("\n", ", ").replace("[0-9]", "").replace("[0-9]\.", ""))
-            img_dict["Price"].append(round(random.uniform(2.00, 8.00), 2))
+            #img_dict["Price"].append(round(random.uniform(2.00, 8.00), 2))
             img_dict["Image Path"].append(r'C:\Users\trent\OneDrive\Documents\GitHub\ai_art_creation\ai_art_creation\image_processing\images_processed' + '\\' + timestamp + '.png')
             img_dict["Prompt"].append(PROMPT)
 

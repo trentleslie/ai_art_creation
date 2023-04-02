@@ -1,8 +1,6 @@
 from PIL import Image, ImageDraw
 import os
 import random as rand
-import math
-import numpy as np
 
 def rounded_corners_crop(image_path, radius_percentage=0.2):
     # Open the image and convert it to RGBA mode (if it's not already)
@@ -177,12 +175,14 @@ def random_polygon_crop(image_path):
     # Create a new image with the same size and RGBA mode
     mask = Image.new("RGBA", (width, height))
 
-    # Draw a filled white polygon on the mask image
-    draw = ImageDraw.Draw(mask)
+    # Calculate the boundary of the smaller square
+    min_boundary = int(width * 0.33)
+    max_boundary = int(width * 1)
+    
     polygon_points = [
         (
-            random.randint(0, width),
-            random.randint(0, height)
+            rand.randint(min_boundary, max_boundary),
+            rand.randint(min_boundary, max_boundary)
         )
         for i in range(num_sides)
     ]
@@ -239,3 +239,65 @@ def random_polygon_crop_circle(image_path):
     #result.save(output_path, "PNG")
 
     return result
+
+def star_crop(image_path):
+    # Open the image and convert it to RGBA mode (if it's not already)
+    image = Image.open(image_path).convert("RGBA")
+    width, height = image.size
+
+    if width != height:
+        raise ValueError("The input image should be square.")
+
+    # Create a new image with the same size and RGBA mode
+    mask = Image.new("RGBA", (width, height))
+
+    # Draw a filled white star on the mask image
+    draw = ImageDraw.Draw(mask)
+    angle = 2 * math.pi / 5
+    inner_radius = width * 0.19
+    outer_radius = width // 2
+    star_points = []
+
+    for i in range(10):
+        r = inner_radius if i % 2 == 1 else outer_radius
+        x = width // 2 + r * math.cos(i * angle / 2 - math.pi / 2)
+        y = height // 2 + r * math.sin(i * angle / 2 - math.pi / 2)
+        star_points.append((x, y))
+
+    draw.polygon(star_points, fill=(255, 255, 255, 255))
+
+    # Apply the mask to the original image
+    result = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    result.paste(image, mask=mask)
+
+    return result
+
+def process_images(image_directory):
+    for filename in os.listdir(image_directory):
+        file_path = os.path.join(image_directory, filename)
+
+        if not os.path.isfile(file_path):
+            continue
+
+        if "-rounded" in filename:
+            output_image = rounded_corners_crop(file_path)
+        elif "-circle" in filename:
+            output_image = circle_crop(file_path)
+        elif "-diamond" in filename:
+            output_image = diamond_crop(file_path)
+        elif "-triangle" in filename:
+            output_image = triangle_crop(file_path)
+        elif "-randpoly" in filename and "-randpolycircle" not in filename:
+            output_image = random_polygon_crop(file_path)
+        elif "-randpolycircle" in filename:
+            output_image = random_polygon_crop_circle(file_path)
+        elif "-star" in filename:
+            output_image = random_polygon_crop_circle(file_path)
+        else:
+            continue
+
+        output_image.save(file_path)
+
+if __name__ == "__main__":
+    image_directory = r"C:\Users\trent\OneDrive\Documents\GitHub\ai_art_creation\ai_art_creation\image_processing\images_processed"
+    process_images(image_directory)

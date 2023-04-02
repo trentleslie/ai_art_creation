@@ -1,9 +1,10 @@
 import pandas as pd
 import os
 import datetime
+import shutil
 
 def csv_merge():
-    #csv_folder = 'C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/csv/'
+    csv_folder = 'C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/csv/'
     png_folder = 'C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/images_raw/'
     png_special_folder = 'C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/images_raw/special/'
     merged_df = pd.DataFrame()
@@ -49,7 +50,7 @@ def csv_merge():
     merged_df_rounded['Title'] = merged_df_rounded['Title'] + ' (rounded)'
     
     # Task 8: In 'merged_df_rounded', replace "-scaled.png" with "-scaled-rounded.png" in the "Image Path" column, set regex = True 
-    merged_df_rounded['Image Path'] = merged_df_rounded['Image Path'].str.replace("-scaled.png", "-scaled-rounded.png", regex=True)
+    merged_df_rounded['Image Path'] = merged_df_rounded['Image Path'].str.replace("-scaled.png", "-rounded-scaled.png", regex=True)
     
     # Task 9: Duplicate 'merged_df' to a separate dataframe called 'merged_df_special' 
     # and filter 'merged_df_special' by the ID column with values that are in 'png_files_special'
@@ -57,7 +58,7 @@ def csv_merge():
     merged_df_special = merged_df_special[merged_df_special['ID'].isin(png_files_special)]
     
     # Task 10: In 'merged_df_special', replace "-scaled.png" with "-scaled-rounded.png" in the "Image Path" column, set regex = True 
-    merged_df_special['Image Path'] = merged_df_special['Image Path'].str.replace("-scaled.png", "-scaled-rounded.png", regex=True)
+    merged_df_special['Image Path'] = merged_df_special['Image Path'].str.replace("-scaled.png", "-rounded-scaled.png", regex=True)
     
     # Task 11: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_circle' 
     # and add " (circle)" to the end of the string in each row of the "Title" column
@@ -65,77 +66,109 @@ def csv_merge():
     merged_df_circle['Title'] = merged_df_circle['Title'] + ' (circle)'
     
     # Task 12: In 'merged_df_circle', replace "-scaled.png" with "-scaled-circle.png" in the "Image Path" column, set regex = True 
-    merged_df_circle['Image Path'] = merged_df_circle['Image Path'].str.replace("-scaled.png", "-scaled-circle.png", regex=True)
+    merged_df_circle['Image Path'] = merged_df_circle['Image Path'].str.replace("-scaled.png", "-circle-scaled.png", regex=True)
     
-    # Task 13: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_triangle' 
+    # Task 13: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_diamond' 
+    # and add " (diamond)" to the end of the string in each row of the "Title" column
+    merged_df_diamond = merged_df_special.copy()
+    merged_df_diamond['Title'] = merged_df_diamond['Title'] + ' (diamond)'
+    
+    # Task 14: In 'merged_df_diamond', replace "-scaled.png" with "-scaled-diamond.png" in the "Image Path" column, set regex = True 
+    merged_df_diamond['Image Path'] = merged_df_diamond['Image Path'].str.replace("-scaled.png", "-diamond-scaled.png", regex=True)
+    
+    # Task 15: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_triangle' 
     # and add " (triangle)" to the end of the string in each row of the "Title" column
     merged_df_triangle = merged_df_special.copy()
     merged_df_triangle['Title'] = merged_df_triangle['Title'] + ' (triangle)'
     
-    # Task 14: In 'merged_df_triangle', replace "-scaled.png" with "-scaled-triangle.png" in the "Image Path" column, set regex = True 
-    merged_df_triangle['Image Path'] = merged_df_triangle['Image Path'].str.replace("-scaled.png", "-scaled-triangle.png", regex=True)
+    # Task 16: In 'merged_df_triangle', replace "-scaled.png" with "-scaled-triangle.png" in the "Image Path" column, set regex = True 
+    merged_df_triangle['Image Path'] = merged_df_triangle['Image Path'].str.replace("-scaled.png", "-triangle-scaled.png", regex=True)
     
-    # Task 15: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_randpoly' 
+    # Task 17: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_randpoly' 
     # and add " (randpoly)" to the end of the string in each row of the "Title" column
     merged_df_randpoly = merged_df_special.copy()
     merged_df_randpoly['Title'] = merged_df_randpoly['Title'] + ' (randpoly)'
     
-    # Task 16: In 'merged_df_randpoly', replace "-scaled.png" with "-scaled-randpoly.png" in the "Image Path" column, set regex = True 
-    merged_df_randpoly['Image Path'] = merged_df_randpoly['Image Path'].str.replace("-scaled.png", "-scaled-randpoly.png", regex=True)
+    # Task 18: In 'merged_df_randpoly', replace "-scaled.png" with "-scaled-randpoly.png" in the "Image Path" column, set regex = True 
+    merged_df_randpoly['Image Path'] = merged_df_randpoly['Image Path'].str.replace("-scaled.png", "-randpoly-scaled.png", regex=True)
     
-    # Task 17: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_randpolycircle' 
+    # Task 19: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_randpolycircle' 
     # and add " (randpolycircle)" to the end of the string in each row of the "Title" column
     merged_df_randpolycircle = merged_df_special.copy()
     merged_df_randpolycircle['Title'] = merged_df_randpolycircle['Title'] + ' (randpolycircle)'
     
-    # Task 18: In 'merged_df_randpolycircle', replace "-scaled.png" with "-scaled-randpolycircle.png" in the "Image Path" column, set regex = True 
-    merged_df_randpolycircle['Image Path'] = merged_df_randpolycircle['Image Path'].str.replace("-scaled.png", "-scaled-randpolycircle.png", regex=True)
+    # Task 20: In 'merged_df_randpolycircle', replace "-scaled.png" with "-scaled-randpolycircle.png" in the "Image Path" column, set regex = True 
+    merged_df_randpolycircle['Image Path'] = merged_df_randpolycircle['Image Path'].str.replace("-scaled.png", "-randpolycircle-scaled.png", regex=True)
     
-    # Task 19: Append 'merged_df_rounded', 'merged_df_triangle', 'merged_df_triangle', 'merged_df_randpoly', and 'merged_df_randpolycircle' to 'merged_df' 
-    merged_df = merged_df.append([merged_df_rounded, merged_df_circle, merged_df_triangle, merged_df_randpoly, merged_df_randpolycircle], ignore_index=True)
+    # Task 21: Duplicate 'merged_df_special' to a separate dataframe called 'merged_df_star' 
+    # and add " (star)" to the end of the string in each row of the "Title" column
+    merged_df_star = merged_df_special.copy()
+    merged_df_star['Title'] = merged_df_star['Title'] + ' (star)'
     
-    # Task 20: Write columns "Title", "Description", "Tags", "Price", "Image Path" from 'merged_df' 
+    # Task 22: In 'merged_df_star', replace "-scaled.png" with "-scaled-star.png" in the "Image Path" column, set regex = True 
+    merged_df_star['Image Path'] = merged_df_star['Image Path'].str.replace("-scaled.png", "-star-scaled.png", regex=True)
+    
+    # Task 23: Append 'merged_df_rounded', 'merged_df_circle', 'merged_df_diamond', 'merged_df_triangle', 'merged_df_randpoly', and 'merged_df_randpolycircle' to 'merged_df' 
+    merged_df = merged_df.append([merged_df_rounded, merged_df_circle, merged_df_diamond, merged_df_triangle, merged_df_randpoly, merged_df_randpolycircle, merged_df_star], ignore_index=True)
+    
+    # Task 24: Write columns "Title", "Description", "Tags", "Price", "Image Path" from 'merged_df' 
     # to a CSV file to csv_merged/[timestamp]-upload.csv where [timestamp] is datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     upload_file_name = 'C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/csv_merged/' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '-upload.csv'
-    merged_df[['Title', 'Description', 'Tags', 'Price', 'Image Path']].to_csv(upload_file_name, index=False)
+    merged_df[['Title', 'Description', 'Tags', 'Image Path']].to_csv(upload_file_name, index=False)
     
-    # Task 20: Write columns "ID", "Prompt", "Title", "Description", "Tags", "Price", "Image Path" from 'merged_df' 
+    # Task 25: Write columns "ID", "Prompt", "Title", "Description", "Tags", "Price", "Image Path" from 'merged_df' 
     # to a CSV file to csv_merged/[timestamp]-reference.csv where [timestamp] is datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     reference_file_name = 'C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/csv_merged/' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '-reference.csv'
     merged_df.to_csv(reference_file_name, index=False)
     
-    # Task 21: Delete the original CSV files from csv_folder
+    # Task 26: Delete the original CSV files from csv_folder
     #for file in os.listdir(csv_folder):
     #    if file.endswith('.csv'):
     #        os.remove(os.path.join(csv_folder, file))
     
-    # Task 22: Delete the PNG files from 'png_to_delete'
-    #for file in png_to_delete:
-    #    os.remove(os.path.join(png_folder, file))
+    # Task 27: Delete the PNG files from 'png_to_delete'
+    for file in png_to_delete:
+        os.remove(os.path.join(png_folder, file))
     
-    # Task 23: Duplicate png files from png_files, adding '-rounded' to the existing filename (before the extension)
+    # Task 28: Duplicate png files from png_files, adding '-rounded' to the existing filename (before the extension)
     for file in png_files:
         if os.path.isfile(os.path.join(png_folder, file + '.png')):
             os.system(f"cp {os.path.join(png_folder, file + '.png')} {os.path.join(png_folder, file + '-rounded.png')}")
     
-    # Task 24: Duplicate png files from png_files_special, adding '-circle' to the existing filename (before the extension)
+    # Task 29: Duplicate png files from png_files_special, adding '-circle' to the existing filename (before the extension)
     for file in png_files_special:
         if os.path.isfile(os.path.join(png_special_folder, file + '.png')):
             os.system(f"cp {os.path.join(png_special_folder, file + '.png')} {os.path.join(png_special_folder, file + '-circle.png')}")
     
-        # Task 25: Duplicate png files from png_files_special, adding '-triangle' to the existing filename (before the extension)
+    # Task 30: Duplicate png files from png_files_special, adding '-triangle' to the existing filename (before the extension)
     for file in png_files_special:
         if os.path.isfile(os.path.join(png_special_folder, file + '.png')):
             os.system(f"cp {os.path.join(png_special_folder, file + '.png')} {os.path.join(png_special_folder, file + '-triangle.png')}")
     
-    # Task 26: Duplicate png files from png_files_special, adding '-randpoly' to the existing filename (before the extension) 
+    # Task 31: Duplicate png files from png_files_special, adding '-diamond' to the existing filename (before the extension)
+    for file in png_files_special:
+        if os.path.isfile(os.path.join(png_special_folder, file + '.png')):
+            os.system(f"cp {os.path.join(png_special_folder, file + '.png')} {os.path.join(png_special_folder, file + '-diamond.png')}")
+    
+    # Task 32: Duplicate png files from png_files_special, adding '-randpoly' to the existing filename (before the extension) 
     for file in png_files_special:
         if os.path.isfile(os.path.join(png_special_folder, file + '.png')):
             os.system(f"cp {os.path.join(png_special_folder, file + '.png')} {os.path.join(png_special_folder, file + '-randpoly.png')}")
     
-    # Task 27: Duplicate png files from png_files_special, adding '-randpolycircle' to the existing filename (before the extension) 
+    # Task 33: Duplicate png files from png_files_special, adding '-randpolycircle' to the existing filename (before the extension) 
     for file in png_files_special:
         if os.path.isfile(os.path.join(png_special_folder, file + '.png')):
             os.system(f"cp {os.path.join(png_special_folder, file + '.png')} {os.path.join(png_special_folder, file + '-randpolycircle.png')}")
+            
+    # Task 34: Duplicate png files from png_files_special, adding '-randpolycircle' to the existing filename (before the extension) 
+    for file in png_files_special:
+        if os.path.isfile(os.path.join(png_special_folder, file + '.png')):
+            os.system(f"cp {os.path.join(png_special_folder, file + '.png')} {os.path.join(png_special_folder, file + '-star.png')}")
+    
+    # Task 35: Copy all the png images from png_folder_special to png_folder (overwriting is fine) and then delete the files in png_folder_special
+    for file in os.listdir(png_special_folder):
+        if file.endswith('.png'):
+            shutil.copy(os.path.join(png_special_folder, file), os.path.join(png_folder, file))
+            os.remove(os.path.join(png_special_folder, file))
 
 csv_merge()
