@@ -26,6 +26,9 @@ api_key.py
 # csv files
 *.csv
 
+# jupyter notebook
+*.ipynb
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
