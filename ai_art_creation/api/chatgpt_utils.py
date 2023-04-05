@@ -1,5 +1,95 @@
 import openai
 from ai_art_creation.api.api_key import api_key, chatgpt_model
+import csv
+from io import StringIO
+import time
+import pandas as pd
+
+def is_csv_format(s):
+    s = s.strip()
+    lines = s.split('\n')
+
+    if len(lines) < 2:
+        print("CSV must have at least 2 lines")
+        return False
+
+    num_columns = None
+
+    csv_reader = csv.reader(StringIO(s), delimiter=',', quotechar='"')
+    for row in csv_reader:
+        if num_columns is None:
+            num_columns = len(row)
+        elif num_columns != len(row):
+            print("CSV must have the same number of columns on each line")
+            return False
+
+        # Check for empty elements in the row
+        for element in row:
+            if element.strip() == "":
+                print("CSV must not have empty elements")
+                return False
+
+    return True
+
+def generate_valid_csv(generator_function):
+    attempts = 0
+    start_time = time.time()
+
+    while True:
+        attempts += 1
+        csv_string = generator_function()
+        print("Attempt", attempts, "completed.")
+        print(csv_string)
+        if is_csv_format(csv_string):
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Successful CSV generated after {attempts} attempts and {elapsed_time:.2f} seconds")
+            
+            # Convert the CSV string to a CSV object
+            csv_reader = csv.reader(StringIO(csv_string), delimiter=',', quotechar='"')
+            csv_object = [row for row in csv_reader]
+            return csv_object
+
+def generate_valid_csv_as_df(generator_function):
+    attempts = 0
+    start_time = time.time()
+
+    while True:
+        attempts += 1
+        csv_string = generator_function()
+        print("Attempt", attempts, "completed.")
+        print(csv_string)
+        if is_csv_format(csv_string):
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Successful CSV generated after {attempts} attempts and {elapsed_time:.2f} seconds")
+            
+            # Convert the CSV string to a DataFrame
+            csv_df = pd.read_csv(StringIO(csv_string), delimiter=',', quotechar='"')
+            return csv_df
+
+def save_valid_csv_to_file(valid_csv, filename="valid_csv.csv"):
+    with open(filename, "w") as f:
+        f.write(valid_csv)
+        
+def save_df_to_file(valid_csv_df, filename="valid_csv.csv"):
+    valid_csv_df.to_csv(filename, index=False)
+
+def join_and_append(original_row, generated_df, ongoing_df):
+    # Repeat the original row values for the same number of rows as in the generated_df
+    original_row_repeated = pd.DataFrame([original_row] * len(generated_df), columns=original_row.index)
+
+    # Reset the index for both DataFrames
+    original_row_repeated.reset_index(drop=True, inplace=True)
+    generated_df.reset_index(drop=True, inplace=True)
+
+    # Join the columns of the original row with the generated DataFrame
+    joined_df = pd.concat([original_row_repeated, generated_df], axis=1)
+
+    # Append the joined DataFrame to the ongoing DataFrame
+    ongoing_df = ongoing_df.append(joined_df, ignore_index=True)
+
+    return ongoing_df
 
 def get_title(prompt):
     
@@ -45,6 +135,7 @@ def get_description(prompt):
         {"role": "system", "content": '''You are a world class search engine optimization (SEO) expert. 
                                             Do not mention anything about AR or aspect ratio.
                                             Do not provide anything conversational.
+                                            Do not provide an introductory label such as "Optmized description:".
                                             Do not use first person pronouns such as "I" or "we" or "us" or "our".
                                             If you are unsure of how to generate the description based on the description, please use tags related to AI art, digital art, digital art design, or any adjectives or nouns that are included in or related to the description.
                                             Please write a search engine optimized description less than 400 characters of the following digital art design description:'''},

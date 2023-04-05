@@ -8,6 +8,18 @@
 *.tif
 *.webp
 
+# fonts
+*.eot
+*.otf
+*.woff
+*.woff2
+*.ttf
+*.svg
+*.fon
+*.ttc
+*.dat
+*.CompositeFont
+
 # API key
 api_key.py
 

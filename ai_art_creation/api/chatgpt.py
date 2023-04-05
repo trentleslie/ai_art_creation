@@ -3,6 +3,10 @@ import random
 from ai_art_creation.api.api_key import api_key, chatgpt_model
 import pickle
 
+#--------------------------------------------------------------------------------------------------------------#
+#---------------------------------------------Generate Prompts-------------------------------------------------#
+#--------------------------------------------------------------------------------------------------------------#
+
 def generate_prompts(how_many=2):
     
     # Set your OpenAI API key
@@ -51,12 +55,12 @@ def generate_prompts(how_many=2):
     # Iterate through the prompts list and submit each prompt to the API
     for i in range(how_many):
         word_count = str(random.randint(20, 125))
-        system_prompt = random.choice([f'''You are a world class AI art prompt engineer. Please write three unique, descriptive, original, and creative word prompts
+        system_prompt = random.choice([f'''You are a world class AI art prompt engineer. Please write two unique, descriptive, original, and creative word prompts
                                        for a piece of beautiful, compelling, and/or captivating art that is less than {word_count} words. 
                                        Do not use new lines for any other use than to separate prompts. Use the following prompts, which are separated by new lines, 
                                        as guides without copying them directly:
                                        ''',
-                                        '''You are a world class AI art prompt engineer. Please write three unique, descriptive, original, and creative word prompts
+                                        '''You are a world class AI art prompt engineer. Please write two unique, descriptive, original, and creative word prompts
                                        for a piece of beautiful, compelling, and/or captivating art. Do not use new lines for any other use than to separate prompts.
                                        Use the following prompts, which are separated by new lines, as guides without directly copying them:
                                        ''',
@@ -81,7 +85,7 @@ def generate_prompts(how_many=2):
                                         What you write will be exactly as formatted in the structure below, including the "/" and ":"
                                         This is the prompt structure: "/imagine prompt: [1], [2], [3], [4], [5], [6], [v]".
 
-                                        This is your task: You will generate 3 prompts for each concept [1], and each of your prompts will be a different approach in its description, environment, atmosphere, and realization.
+                                        This is your task: You will generate 2 prompts for each concept [1], and each of your prompts will be a different approach in its description, environment, atmosphere, and realization.
 
                                         The prompts you provide will be in English.
 
@@ -161,6 +165,10 @@ def generate_prompts(how_many=2):
             # add a new prompt to the prompts_to_add list
             prompts_to_add.append(generated_text)
 
+    # Remove any prompts that are less than 75 characters
+    api_prompts = [prompt for prompt in api_prompts if len(prompt) >= 75]
+    prompts_to_add = [prompt for prompt in prompts_to_add if len(prompt) >= 75]
+    
     # Print the list of API-generated prompts
     print(f'# of new prompts to add: {len(prompts_to_add)}')
     print(prompts_to_add)
@@ -201,3 +209,277 @@ def generate_prompts(how_many=2):
     return api_prompts
 
 #generate_prompts(how_many=2)
+
+#--------------------------------------------------------------------------------------------------------------#
+#------------------------------------------Generate Pre-prompt CSV---------------------------------------------#
+#--------------------------------------------------------------------------------------------------------------#
+
+def generate_preprompt_csv():
+    # Set your OpenAI API key
+    openai.api_key = api_key
+    
+    system_prompt = '''You are a language model that outputs CSV strings with 5 unqiue rows and the headers "target audience", "theme", "style", "elements", "format", "layout". 
+                        Columns are separated by commas, rows are separated by new lines, and each cell in a row is contained within quotation marks. 
+                        Do not deviate from this format. Do not include comments, conversational elements, or other outputs that would disrupt the CSV format. 
+                        Do not respond with empty elements in the csv.
+                        Each column must contain unique responses for each row.
+                        Each row must contain 6 columns.
+                        Every row must contain the same number of columns.
+                        Do not provide an empty string in each "target_audience" column.
+                        Do not provide an empty string in each "theme" column.
+                        Do not provide an empty string in each "style" column.
+                        Do not provide an empty string in each "elements" column.
+                        Do not provide an empty string in each "format" column.
+                        Do not provide an empty string in each "layout" column.
+                        Do not use punctuation, such as periods and exclamation marks, in the title column. 
+                        Guidance for each column will be provided within brackets after the column name.
+'''
+                        
+    user_input = '''Provide 5 unique rows to the CSV given the following guidance for each column. For the first three rows, use the target audiences "birders or birdwatchers", "sailors", and "boaters".:
+                        Keep in mind that the success of the generated images largely depends on the quality of the prompt you provide to DALL-E. Here are some instructions with examples:
+                            1) Define the target audience and theme:
+                                Clearly specify the target audience and the theme of the design you want DALL-E to create. For instance, if you want a pattern for science enthusiasts, you can mention "geometric pattern inspired by science concepts."
+                                Example: "Create a colorful and eye-catching geometric pattern inspired by science concepts, suitable for print on everyday items."
+
+                            2) Describe the style and elements:
+                                Mention the specific art style or elements you want DALL-E to incorporate into the pattern. This can include a particular color palette, shapes, or objects relevant to the theme.
+                                Example: "Design an abstract pattern incorporating DNA helix, atoms, and chemical structures in a vibrant color palette, suitable for print on everyday items."
+
+                            3) Specify the format and layout:
+                                Inform DALL-E about the format and layout of the pattern. This can include whether you want a seamless pattern, a centered design, or a pattern that can be tiled.
+                                Example: "Generate a seamless, repeating pattern featuring stylized illustrations of different dog breeds with a minimalist style, suitable for print on everyday items."
+
+                            4) Encourage variations:
+                                Ask DALL-E to provide multiple variations of the pattern to increase the chances of obtaining a design that meets your requirements.
+                                Example: "Create three different abstract patterns inspired by nature, with organic shapes and earthy colors, suitable for print on everyday items."
+                    Please make the first three target audiences "birders or birdwathers", "sailors", and "boaters"'''
+                                
+    # Define a list of styles
+    style = "Comma separated values"
+
+    #build messages payload
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": style},
+        {"role": "assistant", "content": "On what topic?"},
+        {"role": "user", "content": user_input}
+    ]
+    
+    #call the ChatCompletion end
+    response = openai.ChatCompletion.create(
+            model = chatgpt_model,
+            messages=messages,
+            temperature = 1,
+            top_p = 1, 
+            presence_penalty = 0.5,
+            frequency_penalty = 0.4            
+        )
+
+    # Extract the generated text from the API response
+    csv_string = (response['choices'][0]['message']['content'])
+
+    return csv_string
+
+#print(generate_preprompt_csv())
+
+
+#--------------------------------------------------------------------------------------------------------------#
+#---------------------------------------------Generate Font CSV------------------------------------------------#
+#--------------------------------------------------------------------------------------------------------------#
+
+def generate_font_csv(target_audience="science enthusiasts",
+                                theme="science concepts"):
+    
+    # Set your OpenAI API key
+    openai.api_key = api_key
+    
+    system_prompt = '''You are a language model that outputs CSV strings with 3 unique rows and the headers "text", "font", "font_color", "title", "description", "tags". 
+                        Columns are separated by commas, rows are separated by new lines, and each cell in a row is contained with quotation marks. 
+                        Do not deviate from this format. Do not include comments, conversational elements, or other outputs that would disrupt the csv format.
+                        Do not respond with empty elements in the csv. 
+                        Each row must have 6 columns.
+                        Every row must contain the same number of columns.
+                        Each column must contain unique responses for each row.
+                        Do not use punctuation, such as periods and exclamation marks, in the title column.
+                        Guidance for each column with be provided within brackets after the column name.'''
+                        
+    user_input = f'''provide 3 unique rows to the csv given the following guidance for each column:
+                        "text" column - [Do not provide an empty string in the "text" column. Generate unique, original, creative expressions suitable for best-selling t-shirts or mugs.
+                        There are no limits on word count, but the text must reasonably fit on a t-shirt or mug. 
+                        Do NOT use trademarked or copyrighted phrases.
+                        Do use clever, witty, funny, thought-provoking, inspirational, motivational, or otherwise interesting phrases.
+                        Do use unique, original, and creative phrases. 
+                        Do not use phrases that are already in use or that are commonly used.
+                        incorporate the following guidance:
+                            -target audience: {target_audience}
+                            -theme: {theme}]
+                        "font" column - [Do not provide an empty string in the font column. Suggest a single font that is suitable for the target audience and theme.]
+                        "font_color" column - [Do not provide an empty string in the font color column. Use a sing font color in hex format that is suitable for the target audience and theme.]
+                        "title" column: [You are a world class search engine optimization (SEO) expert. 
+                            Do not mention anything about SEO or SEO experts in the title column.
+                            Do not mention anything about AR or aspect ratio.
+                            Do not provide comments or anything conversational in the title column.
+                            Do not include periods or exclamation marks in the title column.
+                            Provide unique titles for each row.
+                            Do not provide an empty string in the title column.
+                            Use a title identical or very similar to th text column.
+                            Do not reference any products, such as t-shirts or mugs in the title column. Only reference the "text" expression itself.
+                            If you are unsure of how to generate the title based on the description, please use a title related to AI, artificial intelligence, deep learning, digital art, digital art design, or any adjectives or nouns that are included in or related to the description.
+                            Please write a search engine optimized title of the "text" column at less than 50 characters]
+                        "description" column: [You are a world class search engine optimization (SEO) expert and marketer. 
+                            Do not mention anything about AR or aspect ratio.
+                            Do not provide anything conversational.
+                            Do not provide an introductory label such as "Optimized description:".
+                            Do not use first person pronouns such as "I" or "we" or "us" or "our".
+                            Do not provide an empty string in the description column.
+                            Do not speak about creating or generating the "text" expression.
+                            Speak only about the "text" expression itself by describing it with excitement.
+                            Provide unique descriptions for each row.
+                            Do not reference any products, such as t-shirts or mugs in the description column. Only reference the "text" expression itself.
+                            Please write a unique, search engine optimized, witty, funny, clever, exciting description in the description column with punctuation, such as exclamation points, inspired by the "text" column generated above at less than 400 characters]
+                        "tags" column: [You are a world class search engine optimization (SEO) expert.
+                            Do not mention anything about AR or aspect ratio.
+                            Do not provide comments or anything conversational in the tags column.
+                            Do not use any punctuation other than commas.
+                            Do not use any numbered lists.
+                            Do not use any new lines in the tags column.
+                            Do not use periods.
+                            Do not start the list of tags in the tags column with a label.
+                            Do not mention SEO or SEO experts in the tags column.
+                            Do not provide an empty string in the tags column.
+                            Do not reference any products, such as t-shirts or mugs in the tags column. Only reference the "text" expression itself.
+                            Please provide only the tags separated by commas.
+                            Provide unique tags for each row.
+                            If you are unsure of how to generate the tags based on the target audience, theme, or "description" column generated above, please use tags related to AI, artificial intelligence, deep learning, digital art, digital art design, or any adjectives or nouns that are included in or related to the description.
+                            Please provide 25 search engine optimized tags separated by commas]'''
+                                
+    # Define a list of styles
+    style = "Comma separated values"
+
+    #build messages payload
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": style},
+        {"role": "assistant", "content": "On what topic?"},
+        {"role": "user", "content": user_input}
+    ]
+    
+    #call the ChatCompletion end
+    response = openai.ChatCompletion.create(
+            model = chatgpt_model,
+            messages=messages,
+            temperature = 1,
+            top_p = 1, 
+            presence_penalty = 0.5,
+            frequency_penalty = 0.4            
+        )
+
+    # Extract the generated text from the API response
+    generated_text = (response['choices'][0]['message']['content'])
+
+    return generated_text
+
+#print(generate_prompt_csv())
+
+#--------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------Generate Dall-E Prompt CSV-------------------------------------------#
+#--------------------------------------------------------------------------------------------------------------#
+
+def generate_prompt_csv(target_audience="science enthusiasts",
+                                theme="science concepts",
+                                style="geometric",
+                                elements="DNA helix, atoms, and chemical structures",
+                                format="seamless",
+                                layout="repeating"):
+    
+    # Set your OpenAI API key
+    openai.api_key = api_key
+    
+    # Create an empty list to store the API responses
+    api_prompts = []
+    prompts_to_add = []
+    
+    system_prompt = '''You are a language model that outputs CSV strings with 5 unique rows and the headers "prompt", "title", "description", "tags". 
+                        Columns are separated by commas, rows are separated by new lines, and each cell in a row is contained with quotation marks. 
+                        Do not deviate from this format. Do not include comments, conversational elements, or other outputs that would disrupt the csv format.
+                        Do not respond with empty elements in the csv. 
+                        Each row must have 4 columns.
+                        Every row must contain the same number of columns.
+                        Each column must contain unique responses for each row.
+                        Do not use punctuation, such as periods and exclamation marks, in the title column.
+                        Guidance for each column with be provided within brackets after the column name.
+                        You are to act as an independent language model based on the guidance within the brackets provided for each column.'''
+                        
+    user_input = f'''provide 5 unique rows to the csv given the following guidance for each column:
+                        "prompt" column - [Do not provide an empty string in the prompt column. Generate unique, original, creative dall-e prompts to provide best-selling patterns for t-shirts and mugs, specifying to NOT include t-shirts or mugs in the illustration. use 20-100 words for the prompt column. incorporate the following guidance:
+                            -target audience: {target_audience}
+                            -theme: {theme}
+                            -style: {style}
+                            -elements: {elements}
+                            -format: {format}
+                            -layout: {layout}]
+                        "title" column: [You are a world class search engine optimization (SEO) expert. 
+                            Do not mention anything about SEO or SEO experts in the title column.
+                            Do not mention anything about AR or aspect ratio.
+                            Do not provide comments or anything conversational in the title column.
+                            Do not include periods or exclamation marks in the title column.
+                            Provide unique titles for each row.
+                            Do not provide an empty string in the title column.
+                            If you are unsure of how to generate the title based on the description, please use a title related to AI, artificial intelligence, deep learning, digital art, digital art design, or any adjectives or nouns that are included in or related to the description.
+                            Please write a search engine optimized title of the prompt used above at less than 50 characters]
+                        "description" column: [You are a world class search engine optimization (SEO) expert and marketer. 
+                            Do not mention anything about AR or aspect ratio.
+                            Do not provide anything conversational.
+                            Do not provide an introductory label such as "Optimized description:".
+                            Do not use first person pronouns such as "I" or "we" or "us" or "our".
+                            Do not provide an empty string in the description column.
+                            Do not speak about creating or generating the design.
+                            Speak only about the design itself by describing it with excitement.
+                            Provide unique descriptions for each row.
+                            Please write a unique, search engine optimized, witty, funny, clever, exciting description in the description column with punctuation, such as exclamation points, inspired by the prompt column generated above at less than 400 characters]
+                        "tags" column: [You are a world class search engine optimization (SEO) expert.
+                            Do not mention anything about AR or aspect ratio.
+                            Do not provide comments or anything conversational in the tags column.
+                            Do not use any punctuation other than commas.
+                            Do not use any numbered lists.
+                            Do not use any new lines in the tags column.
+                            Do not use periods.
+                            Do not start the list of tags in the tags column with a label.
+                            Do not mention SEO or SEO experts in the tags column.
+                            Do not provide an empty string in the tags column.
+                            Please provide only the tags separated by commas.
+                            Provide unique tags for each row.
+                            If you are unsure of how to generate the tags based on the description generated above, please use tags related to AI, artificial intelligence, deep learning, digital art, digital art design, or any adjectives or nouns that are included in or related to the description.
+                            Please provide 25 search engine optimized tags separated by commas]'''
+                                
+    # Define a list of styles
+    style = "Comma separated values"
+
+    #build messages payload
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": style},
+        {"role": "assistant", "content": "On what topic?"},
+        {"role": "user", "content": user_input}
+    ]
+    
+    #call the ChatCompletion end
+    response = openai.ChatCompletion.create(
+            model = chatgpt_model,
+            messages=messages,
+            temperature = 1,
+            top_p = 1, 
+            presence_penalty = 0.5,
+            frequency_penalty = 0.4            
+        )
+
+    # Extract the generated text from the API response
+    generated_text = (response['choices'][0]['message']['content'])
+
+    return generated_text
+
+#print(generate_prompt_csv())
+
+
+
+
