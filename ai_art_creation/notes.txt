@@ -1,0 +1,10 @@
+to load ai_art_creation.api module via the powershell console, run the following command:
+
+$env:PYTHONPATH = "$env:PYTHONPATH;C:\Users\trent\OneDrive\Documents\GitHub\ai_art_creation"
+
+-------------------------------------------------------------
+
+to load ai_art_creation.api module into the interactive (python) console, run the following commands:
+
+import sys
+sys.path.append('C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation')

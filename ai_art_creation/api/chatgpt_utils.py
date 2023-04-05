@@ -1,16 +1,19 @@
 import openai
 from ai_art_creation.api.api_key import api_key, chatgpt_model
+from ai_art_creation.api.chatgpt import generate_prompt_csv, generate_font_csv
 import csv
 from io import StringIO
 import time
 import pandas as pd
 
 def is_csv_format(s):
+    csv_fail_wait_time = 1 # seconds
     s = s.strip()
     lines = s.split('\n')
 
     if len(lines) < 2:
         print("CSV must have at least 2 lines")
+        time.sleep(csv_fail_wait_time)
         return False
 
     num_columns = None
@@ -21,12 +24,14 @@ def is_csv_format(s):
             num_columns = len(row)
         elif num_columns != len(row):
             print("CSV must have the same number of columns on each line")
+            time.sleep(csv_fail_wait_time)
             return False
 
         # Check for empty elements in the row
         for element in row:
             if element.strip() == "":
                 print("CSV must not have empty elements")
+                time.sleep(csv_fail_wait_time)
                 return False
 
     return True
@@ -90,6 +95,76 @@ def join_and_append(original_row, generated_df, ongoing_df):
     ongoing_df = ongoing_df.append(joined_df, ignore_index=True)
 
     return ongoing_df
+
+def generate_ongoing_prompt_df(valid_preprompt_csv_df):
+        
+        # Initialize an ongoing DataFrame with the column names from both valid_csv_df and the new DataFrames generated from generate_prompt_csv_with_args()
+        ongoing_prompt_df = pd.DataFrame(columns=valid_preprompt_csv_df.columns.tolist() + ["prompt", "title", "description", "tags"])
+
+        # Iterate through the rows of valid_csv_df
+        for _, row in valid_preprompt_csv_df.iterrows():
+            # Create a wrapper function that takes no arguments and returns the output of generate_prompt_csv with the required arguments
+            def wrapper_function():
+                return generate_prompt_csv(
+                    target_audience=row["target audience"],
+                    theme=row["theme"],
+                    style=row["style"],
+                    elements=row["elements"],
+                    format=row["format"],
+                    layout=row["layout"],
+                )
+
+            # Call generate_valid_csv_as_df() with the wrapper_function as an argument
+            generated_df = generate_valid_csv_as_df(wrapper_function)
+            
+            # Initialize an empty set to store unique tags
+            unique_tags = set()
+
+            # Iterate through the "tags" column and add tags to the unique_tags set
+            for tags in generated_df['tags']:
+                unique_tags.update(tag.strip() for tag in tags.split(','))
+
+            # Join the unique_tags set with commas and update the "tags" column
+            unique_tags_str = ', '.join(unique_tags)
+            generated_df['tags'] = unique_tags_str
+
+            # Join the original row with the generated DataFrame and append it to the ongoing DataFrame
+            ongoing_prompt_df = join_and_append(row, generated_df, ongoing_prompt_df)
+            
+        return ongoing_prompt_df
+
+def generate_ongoing_tshirt_df(valid_preprompt_csv_df):
+
+    # Initialize an ongoing DataFrame with the column names from both valid_csv_df and the new DataFrames generated from generate_prompt_csv_with_args()
+    ongoing_tshirt_df = pd.DataFrame(columns=valid_preprompt_csv_df.columns.tolist() + ["text", "title", "description", "tags"])
+
+    # Iterate through the rows of valid_csv_df
+    for _, row in valid_preprompt_csv_df.iterrows():
+        # Create a wrapper function that takes no arguments and returns the output of generate_prompt_csv with the required arguments
+        def wrapper_function():
+            return generate_font_csv(
+                target_audience=row["target audience"],
+                theme=row["theme"]
+            )
+
+        # Call generate_valid_csv_as_df() with the wrapper_function as an argument
+        generated_df = generate_valid_csv_as_df(wrapper_function)
+        
+        # Initialize an empty set to store unique tags
+        unique_tags = set()
+
+        # Iterate through the "tags" column and add tags to the unique_tags set
+        for tags in generated_df['tags']:
+            unique_tags.update(tag.strip() for tag in tags.split(','))
+
+        # Join the unique_tags set with commas and update the "tags" column
+        unique_tags_str = ', '.join(unique_tags)
+        generated_df['tags'] = unique_tags_str
+
+        # Join the original row with the generated DataFrame and append it to the ongoing DataFrame
+        ongoing_tshirt_df = join_and_append(row, generated_df, ongoing_tshirt_df)
+    
+    return ongoing_tshirt_df
 
 def get_title(prompt):
     

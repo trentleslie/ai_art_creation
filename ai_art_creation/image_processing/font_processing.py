@@ -1,8 +1,6 @@
 import os
 import datetime
 from PIL import Image, ImageDraw, ImageFont
-import pprint
-import random
 
 def generate_text_image(width, height, text, font_name, font_color, border_color): 
     def hex_to_rgb(hex_string):
@@ -61,6 +59,30 @@ def generate_fonts_dictionary(fonts_directory):
 
     return fonts_available
 
+def process_fonts_images(ongoing_tshirt_df, fonts_directory, output_path):
+    fonts_available = generate_fonts_dictionary(fonts_directory)
+    fonts_to_install = []
+    
+    for _, row in ongoing_tshirt_df.iterrows():        
+        output_path = "C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/images_raw/"
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"{timestamp}-font.png"
+
+        if row["font"] in fonts_available.keys():
+            image = generate_text_image(
+                width=1024,
+                height=1024,
+                text=row["text"],
+                font_name=fonts_available[row["font"]],
+                font_color=row["font color"],
+                border_color=(0, 0, 0, 255)
+            )
+            
+            image.save(os.path.join(output_path, filename))
+        else:
+            fonts_to_install.append(row["font"])
+            
+    return fonts_to_install
 
 
 
