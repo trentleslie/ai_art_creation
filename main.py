@@ -5,8 +5,8 @@ from ai_art_creation.image_processing.font_processing import process_fonts_image
 import datetime
 
 # Constants
-fonts_directory = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\image_processing\\Fonts"
-output_path = "C:/Users/trent/OneDrive/Documents/GitHub/ai_art_creation/ai_art_creation/image_processing/images_raw/"
+FONTS_DIRECTORY = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\image_processing\\Fonts"
+OUTPUT_PATH = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\image_processing\\images_raw"
 
 def main():
 
@@ -15,21 +15,21 @@ def main():
     print(valid_preprompt_csv_df)
     
     # Generate prompts for DALL-E
-    ongoing_prompt_df = generate_ongoing_prompt_df(valid_preprompt_csv_df)
+    #ongoing_prompt_df = generate_ongoing_prompt_df(valid_preprompt_csv_df)
     
-    # Get the current date and time as a timestamp for filename
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    ongoing_prompt_df.to_csv(f'prompts_for_dalle-{timestamp}.csv', index=False)
+    # Save prompts for DALL-E as a CSV file
+    #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    #ongoing_prompt_df.to_csv(f'prompts_for_dalle-{timestamp}.csv', index=False)
     
     # Generate text for t-shirts
     ongoing_tshirt_df = generate_ongoing_tshirt_df(valid_preprompt_csv_df)
 
-    # Get the current date and time as a timestamp for filename
+    # Save text for t-shirts as a CSV file
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     ongoing_tshirt_df.to_csv(f'text_for_tshirts-{timestamp}.csv', index=False)
 
     # Generate images from text for t-shirts and get fonts to install
-    fonts_to_install = process_fonts_images(ongoing_tshirt_df, fonts_directory, output_path)
+    fonts_to_install = process_fonts_images(ongoing_tshirt_df, FONTS_DIRECTORY, OUTPUT_PATH)
     
     # Print fonts to install
     print("Fonts to install:")
@@ -37,7 +37,7 @@ def main():
         print(font)
     
     # Generate images from prompts for DALL-E and print filenames
-    print(generate_images_from_df(ongoing_prompt_df))
+    #print(generate_images_from_df(ongoing_prompt_df))
     
 if __name__ == "__main__":
     main()
