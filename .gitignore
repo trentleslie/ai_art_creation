@@ -20,8 +20,15 @@
 *.dat
 *.CompositeFont
 
-# API key
+# startup env
+settings.json
+activate_env.ps1
+
+# API keys
 api_key.py
+credentials.json
+token.json
+chatgpt-tasks-creds.json
 
 # csv files
 *.csv
