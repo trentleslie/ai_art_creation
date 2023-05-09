@@ -1,6 +1,7 @@
 import os
 import datetime
 from PIL import Image, ImageDraw, ImageFont
+from fontTools.ttLib import TTFont
 
 def generate_text_image(width, height, text, font_name, font_color, border_color): 
     def hex_to_rgb(hex_string):
@@ -49,13 +50,23 @@ def generate_text_image(width, height, text, font_name, font_color, border_color
     return img
 
 def generate_fonts_dictionary(fonts_directory):
+    def get_font_name(font_file_path):
+        try:
+            font = TTFont(font_file_path)
+            name_table = font["name"]
+            font_name = name_table.getName(4, 3, 1, 1033).toUnicode()
+            return font_name
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+    
     fonts_available = {}
 
     for file in os.listdir(fonts_directory):
         if file.endswith(".otf") or file.endswith(".ttf"):
-            file_name_without_extension = os.path.splitext(file)[0]
+            font_name = get_font_name(os.path.join(fonts_directory, file))
             file_path = os.path.join(fonts_directory, file)
-            fonts_available[file_name_without_extension] = file_path
+            fonts_available[font_name] = file_path
 
     return fonts_available
 
@@ -74,7 +85,7 @@ def process_fonts_images(ongoing_tshirt_df, fonts_directory, output_path):
                 height=1024,
                 text=row["text"],
                 font_name=fonts_available[row["font"]],
-                font_color=row["font color"],
+                font_color=row["font_color"],
                 border_color=(0, 0, 0, 255)
             )
             
