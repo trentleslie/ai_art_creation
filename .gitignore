@@ -20,6 +20,9 @@
 *.dat
 *.CompositeFont
 
+# ebooks
+*.epub
+
 # startup env
 settings.json
 activate_env.ps1
