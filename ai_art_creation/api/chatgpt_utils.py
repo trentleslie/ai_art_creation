@@ -341,5 +341,5 @@ def csv_generator(file_name, number_of_rows):
             print(f'Row {i + 1} of {number_of_rows} completed')
 
 # Usage
-csv_generator('output.csv', 5)
+#csv_generator('output.csv', 5)
 
