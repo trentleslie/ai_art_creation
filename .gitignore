@@ -36,6 +36,7 @@ merch_informer_pw.py
 starting_keywords.txt
 keywords_for*txt
 all_prompts*txt
+*.pickle
 
 # csv files
 *.csv
