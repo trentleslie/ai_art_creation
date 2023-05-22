@@ -27,11 +27,15 @@
 settings.json
 activate_env.ps1
 
-# API keys
+# API keys, passwords, etc
 api_key.py
 credentials.json
 token.json
 chatgpt-tasks-creds.json
+merch_informer_pw.py
+starting_keywords.txt
+keywords_for*txt
+all_prompts*txt
 
 # csv files
 *.csv
