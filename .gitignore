@@ -37,6 +37,8 @@ starting_keywords.txt
 keywords_for*txt
 all_prompts*txt
 *.pickle
+*.pkl
+algoinspiration*db*
 
 # csv files
 *.csv
