@@ -36,6 +36,8 @@ merch_informer_pw.py
 starting_*.txt
 keywords_for*txt
 all_prompts*txt
+prompts_for*txt
+*products.txt
 *.pickle
 *.pkl
 algoinspiration*db*
