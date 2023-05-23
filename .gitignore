@@ -33,7 +33,7 @@ credentials.json
 token.json
 chatgpt-tasks-creds.json
 merch_informer_pw.py
-starting_keywords.txt
+starting_*.txt
 keywords_for*txt
 all_prompts*txt
 *.pickle
