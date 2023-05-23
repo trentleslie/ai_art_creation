@@ -2,37 +2,66 @@ import openai
 import random
 import time
 import os
+import random
+import sqlite3
 from datetime import datetime
 from ai_art_creation.api.api_key import api_key
 
-# Folder where the CSV files are stored
-folder_path = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\prompt_generation_keywords\\"
+keywords_folder_path = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\prompt_generation_keywords\\"
+sqlite_db_path = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\algoinspiration.db"
 
-# Get list of all files
-files = os.listdir(folder_path)
+def get_keywords_list(folder_path, file_type=".csv"):
+    # Get list of all files
+    files = os.listdir(folder_path)
 
-# Sort list of files based on their modified time
-files.sort(key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
+    # Sort list of files based on their modified time
+    files.sort(key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
 
-# The latest file would be the last file in the sorted list
-latest_file = files[-1]
+    # The latest file would be the last file in the sorted list
+    latest_file = files[-1]
 
-# Ensure the file is a CSV file
-if latest_file.endswith(".txt"):
-    # Full file path
-    file_path = os.path.join(folder_path, latest_file)
-else:
-    print("The latest file in the directory is not a text file.")
+    # Ensure the file is a CSV file
+    if latest_file.endswith(file_type):
+        # Full file path
+        file_path = os.path.join(folder_path, latest_file)
+    else:
+        print("The latest file in the directory is not a text file.")
 
-# Open and read the file, and split the content into a list
-with open(file_path, 'r') as file:
-    keywords_list = file.read().splitlines()
+    # Open and read the file, and split the content into a list
+    with open(file_path, 'r') as file:
+        keywords_list = file.read().splitlines()
+        
+    return keywords_list
+
+def get_random_gpt_params():
+    models = ['gpt-3.5-turbo', 'gpt-4']
+    rand_model = random.choice(models)
+    rand_temperature = round(random.uniform(0.3, 0.9), 2)
+    rand_top_p = round(random.uniform(0.3, 0.9), 2)
+    rand_presence_penalty = round(random.uniform(0.3, 0.9), 2)
+    rand_frequency_penalty = round(random.uniform(0.3, 0.9), 2)
+
+    params = {
+        "model": rand_model,
+        "temperature": rand_temperature,
+        "top_p": rand_top_p,
+        "presence_penalty": rand_presence_penalty,
+        "frequency_penalty": rand_frequency_penalty,
+    }
+
+    return params
+
 
 #--------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------Generate Prompts-------------------------------------------------#
 #--------------------------------------------------------------------------------------------------------------#
 
-def generate_prompts_tiled(keyword):
+def generate_prompts_tiled(keyword, 
+                           model="gpt-4", 
+                           temperature=0.5, 
+                           top_p=0.5, 
+                           presence_penalty=0.5, 
+                           frequency_penalty=0.5):
     
     # Set your OpenAI API key
     openai.api_key = api_key
@@ -49,7 +78,7 @@ def generate_prompts_tiled(keyword):
                         [2] = a detailed description of [1] with specific imagery details.
                         [3] = a detailed description of the scene's environment.
                         [4] = a detailed description of the scene's mood, feelings, and atmosphere.
-                        [5] = A style (e.g. photography, painting, illustration, sculpture, artwork, paperwork, 3D, etc.) for [1].
+                        [5] = A style (e.g. geometric, abstract, painting, illustration, artwork, 3D, etc.) for [1].
                         [6] = A description of how [5] will be executed (e.g. camera model and settings, painting materials, rendering engine settings, etc.)
 
                         Formatting: 
@@ -61,6 +90,7 @@ def generate_prompts_tiled(keyword):
                         - Do not describe unreal concepts as "real" or "photographic".
                         - Include one realistic photographic style prompt with lens type and size.
                         - Separate different prompts with two new lines.
+                        - The generated images are intended to be used for merchandise, such as posters, t-shirts, and mugs, so try to specify trendy, cute, and/or cool concepts.
 
                         Example Prompts:
                         Prompt 1:
@@ -74,24 +104,17 @@ def generate_prompts_tiled(keyword):
     style = random.choice([
         "Poetic prose",
         "Humorous description",
-        "Romantic love letter",
-        "Horror movie plot summary",
-        "Stream-of-consciousness",
         "Surrealism",
         "Romanticism",
-        "Imagism",
-        "Ekphrastic writing",
         "Nature poetry",
         "Impressionism",
         "Prose poetry",
-        "Nature journaling",
         "Magical realism",
         "Minimalism",
         "Futurism",
         "Folklore",
         "Mythology",
         "Science fiction",
-        "Horror",
         "Realism",
         "Symbolism",
         "Absurdism"
@@ -107,12 +130,12 @@ def generate_prompts_tiled(keyword):
     #call the ChatCompletion end
     print("Generating prompts...")
     response = openai.ChatCompletion.create(
-            model = 'gpt-4',
+            model = model,
             messages=messages,
-            temperature = 0.5,
-            top_p = 1, 
-            presence_penalty = 0.5,
-            frequency_penalty = 0.4            
+            temperature = temperature,
+            top_p = top_p, 
+            presence_penalty = presence_penalty,
+            frequency_penalty = frequency_penalty            
         )
     
     time.sleep(3)
@@ -132,25 +155,66 @@ def generate_prompts_tiled(keyword):
     
     return prompts_list
 
-def get_tiled_prompts():
+def get_tiled_prompts(keywords_list, sqlite_db_path):
     # Create a timestamp
     timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
 
     # Specify the path for the output text file
     output_path = f"C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\all_prompts_tiled_{timestamp}.txt"
 
-    # Open the file in write mode
-    with open(output_path, 'w') as file:
+    with sqlite3.connect(sqlite_db_path) as conn:
+        c = conn.cursor()
+        # Open the file in write mode
+        with open(output_path, 'w') as file:
 
-        # Iterate over the keywords list
-        for i, keyword in enumerate(keywords_list, 1):
-            print(f"Processing keyword {i} of {len(keywords_list)}: {keyword}")
-            # Generate prompts for the current keyword
-            prompts = generate_prompts_tiled(keyword)
-        
-            # Write prompts to the file as they are generated
-            for prompt in prompts:
-                if not prompt.startswith("Prompt"):
-                    file.write("%s\n" % prompt)
+            # Iterate over the keywords list
+            for i, keyword in enumerate(keywords_list, 1):
+                try:
+                    # Attempt to split the string and get the second element
+                    keyword_for_gpt = keyword.split(":")[1]
+                except IndexError:
+                    # If there is no ":" in the string, just use the whole string as the keyword
+                    keyword_for_gpt = keyword
+    
+                print(f"Processing keyword {i} of {len(keywords_list)}: {keyword_for_gpt}")
+                
+                params = get_random_gpt_params()
+                
+                # Generate prompts for the current keyword
+                prompts = generate_prompts_tiled(keyword=keyword_for_gpt, 
+                                                model=params['model'],
+                                                temperature=params['temperature'], 
+                                                top_p=params['top_p'], 
+                                                presence_penalty=params['presence_penalty'],
+                                                frequency_penalty=params['frequency_penalty'])
+            
+                # Write prompts to the file as they are generated
+                for prompt in prompts:
+                    if not prompt.startswith("Prompt"):
+                        file.write("%s\n" % prompt)
+                        
+                        # insert a record
+                        c.execute('''
+                            INSERT INTO prompts_and_images (
+                                starting_keyword, 
+                                gpt_model, 
+                                gpt_keyword, 
+                                temperature, 
+                                top_p, 
+                                presence_penalty, 
+                                frequency_penalty, 
+                                prompt
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            ''', (keyword.split(":")[0], 
+                                  params['model'], 
+                                  keyword_for_gpt, 
+                                  params['temperature'], 
+                                  params['top_p'], 
+                                  params['presence_penalty'], 
+                                  params['frequency_penalty'], 
+                                  prompt))
+
 
     print("Prompt generation completed!")
+    
+get_tiled_prompts(get_keywords_list(folder_path=keywords_folder_path, file_type=".txt"), sqlite_db_path=sqlite_db_path)
