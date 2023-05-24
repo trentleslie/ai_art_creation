@@ -41,6 +41,8 @@ prompts_for*txt
 *.pickle
 *.pkl
 algoinspiration*db*
+2023*.txt
+prompt_path_info*.py
 
 # csv files
 *.csv

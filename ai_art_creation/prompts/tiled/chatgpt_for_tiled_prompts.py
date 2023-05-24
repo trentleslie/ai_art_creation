@@ -5,30 +5,31 @@ import os
 import random
 import sqlite3
 import pickle
+import pandas as pd
 from datetime import datetime
 from ai_art_creation.api.api_key import api_key
+from ai_art_creation.prompts.prompt_path_info import tiled_pickle_file_path, sqlite_db_path, starting_keywords_path, tiled_products_path, base_prompt_output_path, keywords_folder_path
 
-pickle_file_path = 'C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\tiled\\completed_keywords.pkl'
+# Function for getting the list of relevant keywords and products
+def get_keywords_list(starting_folder_path, 
+                      starting_keywords_path, 
+                      tiled_products_path,
+                      file_type=".csv"):
+    # Load starting keywords
+    with open(starting_keywords_path, 'r') as f:
+        # Read lines into a list
+        starting_keywords = f.read().splitlines()
 
-keywords_folder_path = "C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\prompt_generation_keywords\\"
-sqlite_db_path = r'C:\Users\trent\OneDrive\Documents\GitHub\ai_art_creation\ai_art_creation\algoinspiration.db'
-
-# Open the file in read mode
-with open('C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\keywords\\starting_keywords.txt', 'r') as f:
-    # Read lines into a list
-    keywords_to_run = f.read().splitlines()
-
-# Open the file in read mode
-with open('C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\tiled\\tiled_products.txt', 'r') as f:
-    # Read lines into a list
-    products_to_record = f.read().splitlines()
-
-def get_keywords_list(folder_path, file_type=".csv"):
+    # Load products
+    with open(tiled_products_path, 'r') as f:
+        # Read lines into a list
+        all_products = f.read().splitlines()
+    
     # Get list of all files
-    files = os.listdir(folder_path)
+    files = os.listdir(starting_folder_path)
 
     # Sort list of files based on their modified time
-    files.sort(key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
+    files.sort(key=lambda x: os.path.getmtime(os.path.join(starting_folder_path, x)))
 
     # The latest file would be the last file in the sorted list
     latest_file = files[-1]
@@ -36,16 +37,21 @@ def get_keywords_list(folder_path, file_type=".csv"):
     # Ensure the file is a CSV file
     if latest_file.endswith(file_type):
         # Full file path
-        file_path = os.path.join(folder_path, latest_file)
+        file_path = os.path.join(starting_folder_path, latest_file)
     else:
-        print("The latest file in the directory is not a text file.")
-
-    # Open and read the file, and split the content into a list
-    with open(file_path, 'r') as file:
-        keywords_list = file.read().splitlines()
+        print(f"The latest file in the directory is not a {file_type} file.")
         
-    return keywords_list
+    df = pd.read_csv(file_path)
+    
+    # Create keywords_to_run list
+    keywords_to_run = [keyword for keyword in starting_keywords if any(keyword in element for element in df['starting_keyword'].values)]
 
+    # Create products_to_record list
+    products_to_record = [product for product in all_products if any(product in element for element in df['starting_keyword'].values)]
+    
+    return (keywords_to_run, products_to_record)
+
+# Function for getting random gpt params
 def get_random_gpt_params():
     models = ['gpt-3.5-turbo', 'gpt-4']
     rand_model = random.choice(models)
@@ -64,9 +70,8 @@ def get_random_gpt_params():
 
     return params
 
-
 #--------------------------------------------------------------------------------------------------------------#
-#---------------------------------------------Generate Prompts-------------------------------------------------#
+#--------------------------------------------GPT Prompt Function-----------------------------------------------#
 #--------------------------------------------------------------------------------------------------------------#
 
 def generate_prompts_tiled(keyword, 
@@ -114,19 +119,18 @@ def generate_prompts_tiled(keyword,
                         '''
                                 
     # Define a list of styles
-    style = random.choice([
-        "Watercolor",
-        "Geometric",
-        "Cute",
-        "Trendy",
-        "Cool",
-        "Stylish",
-        "Vibrant",
-        "Abstract",
-        "Minimalist",
-        "White Background"
-        ]
-    )
+    style = f'''Incorporate a few of the following key phrases in your prompt:
+                "Watercolor",
+                "Geometric",
+                "Cute",
+                "Trendy",
+                "Cool",
+                "Stylish",
+                "Vibrant",
+                "Abstract",
+                "Minimalist",
+                "Vectorized cartoon style on a white #000000 background"
+            '''
 
     #build messages payload
     messages = [
@@ -134,7 +138,7 @@ def generate_prompts_tiled(keyword,
         {"role": "user", "content": style},
     ]
     
-    max_retries = 3
+    max_retries = 10
     retry_count = 0
     retry_flag = True
             
@@ -163,9 +167,13 @@ def generate_prompts_tiled(keyword,
                 
             retry_flag = False
             
-        except Exception:
-            print("Exception occurred in OpenAI API call. Retrying...")
+        except Exception as e:
+            print(f"Exception occurred in OpenAI API call: '{e}' Retrying...")
             retry_count += 1
+            
+        if retry_count == max_retries - 1:
+            print("Max retries reached. Skipping this prompt...")
+            return []
 
     # Extract the generated text from the API response
     generated_text = (response['choices'][0]['message']['content'])
@@ -180,18 +188,22 @@ def generate_prompts_tiled(keyword,
     
     return prompts_list
 
+#--------------------------------------------------------------------------------------------------------------#
+#------------------------------------------Generate Tiled Prompts----------------------------------------------#
+#--------------------------------------------------------------------------------------------------------------#
+
 def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_path):
     try:
         with open(pickle_file_path, 'rb') as pickle_file:
             completed_keywords = pickle.load(pickle_file)
     except FileNotFoundError:
         completed_keywords = []  # initialize as an empty list if the file doesn't exist
-        
+
     # Create a timestamp
     timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
 
     # Specify the path for the output text file
-    output_path = f"C:\\Users\\trent\\OneDrive\\Documents\\GitHub\\ai_art_creation\\ai_art_creation\\prompts\\tiled\\all_prompts_tiled_{timestamp}.txt"
+    output_path = f"{base_prompt_output_path}tiled\\all_prompts_tiled_{timestamp}.txt"
 
     with sqlite3.connect(sqlite_db_path) as conn:
         c = conn.cursor()
@@ -264,8 +276,22 @@ def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_
                     print(f"Keyword {keyword_for_gpt} has already been processed. Moving on to the next one...")
 
     print("Prompt generation completed!")
+    
+    return completed_keywords
 
-get_tiled_prompts(keywords_to_run, 
-                  products_list=products_to_record, 
-                  sqlite_db_path=sqlite_db_path,
-                  pickle_file_path=pickle_file_path)
+# Get the list of keywords to run and the list of products to record
+keywords_to_run, products_to_record = get_keywords_list(keywords_folder_path,
+                                        starting_keywords_path,
+                                        tiled_products_path,
+                                        file_type=".csv")
+
+# Get the prompts
+completed_keywords_check = get_tiled_prompts(keywords_to_run, 
+                                products_list=products_to_record, 
+                                sqlite_db_path=sqlite_db_path,
+                                pickle_file_path=tiled_pickle_file_path)
+
+# Delete the pickle file if all went well
+if len(completed_keywords_check) == len(keywords_to_run):
+    print("All keywords have been processed! Deleting the pickle file...")
+    os.remove(tiled_pickle_file_path)
