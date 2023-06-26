@@ -15,6 +15,10 @@ def get_keywords_list(starting_folder_path,
                       starting_keywords_path, 
                       tiled_products_path,
                       file_type=".csv"):
+    
+    # if generating prompts from archived keywords, use this path
+    #starting_keywords_path = r'C:\Users\trent\OneDrive\Documents\GitHub\ai_art_creation\ai_art_creation\keywords\starting_keywords_archive.txt'
+    
     # Load starting keywords
     with open(starting_keywords_path, 'r') as f:
         # Read lines into a list
@@ -44,10 +48,10 @@ def get_keywords_list(starting_folder_path,
     df = pd.read_csv(file_path)
     
     # Create keywords_to_run list
-    keywords_to_run = [keyword for keyword in starting_keywords if any(keyword in element for element in df['starting_keyword'].values)]
+    keywords_to_run = [keyword for keyword in starting_keywords if any(keyword.lower() in element.lower() for element in df['starting_keyword'].values)]
 
     # Create products_to_record list
-    products_to_record = [product for product in all_products if any(product in element for element in df['starting_keyword'].values)]
+    products_to_record = [product for product in all_products if any(product.lower() in element.lower() for element in df['starting_keyword'].values)]
     
     return (keywords_to_run, products_to_record)
 
@@ -74,7 +78,7 @@ def get_random_gpt_params():
 #--------------------------------------------GPT Prompt Function-----------------------------------------------#
 #--------------------------------------------------------------------------------------------------------------#
 
-def generate_prompts_tiled(keyword, 
+def generate_portrait_prompts(keyword, 
                            model="gpt-4", 
                            temperature=0.5, 
                            top_p=0.5, 
@@ -129,6 +133,8 @@ def generate_prompts_tiled(keyword,
                 "Vibrant",
                 "Abstract",
                 "Minimalist",
+                "Pencil Drawing",
+                "Ink Drawing",
                 "Vectorized cartoon style on a white #000000 background"
             '''
 
@@ -182,7 +188,9 @@ def generate_prompts_tiled(keyword,
     prompts_list = generated_text.split("\n")
 
     # Remove any empty or whitespace elements from the list, and any that start with "Prompt"
-    prompts_list = [prompt.strip() for prompt in prompts_list if prompt.strip() and not prompt.startswith("Prompt")]
+    prompts_list = [s + " On a white #000000 background" if "Vectorized cartoon style" in s else s for s in prompts_list]
+    
+    prompts_list = [s + " On a white #000000 background" for s in prompts_list]
         
     print(len(prompts_list) , "more prompts generated!")
     
@@ -192,7 +200,11 @@ def generate_prompts_tiled(keyword,
 #------------------------------------------Generate Tiled Prompts----------------------------------------------#
 #--------------------------------------------------------------------------------------------------------------#
 
-def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_path):
+def get_prompts(keywords_list, 
+                      products_list, 
+                      sqlite_db_path, 
+                      pickle_file_path, 
+                      generate_func):
     try:
         with open(pickle_file_path, 'rb') as pickle_file:
             completed_keywords = pickle.load(pickle_file)
@@ -226,7 +238,7 @@ def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_
                     params = get_random_gpt_params()
                     
                     # Generate prompts for the current keyword
-                    prompts = generate_prompts_tiled(keyword=keyword_for_gpt, 
+                    prompts = generate_func(keyword=keyword_for_gpt, 
                                                     model=params['model'],
                                                     temperature=params['temperature'], 
                                                     top_p=params['top_p'], 
@@ -250,8 +262,9 @@ def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_
                                         presence_penalty, 
                                         frequency_penalty, 
                                         prompt,
-                                        product
-                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                        product,
+                                        keyword_product
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     ''', (keyword.split(":")[0], 
                                         params['model'], 
                                         keyword_for_gpt, 
@@ -260,7 +273,8 @@ def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_
                                         params['presence_penalty'], 
                                         params['frequency_penalty'], 
                                         prompt,
-                                        product))
+                                        product,
+                                        f'{keyword_for_gpt} {product}'))
                                 
                                 conn.commit()
                                 
@@ -279,19 +293,36 @@ def get_tiled_prompts(keywords_list, products_list, sqlite_db_path, pickle_file_
     
     return completed_keywords
 
+print("Getting keywords and products...")
+
 # Get the list of keywords to run and the list of products to record
 keywords_to_run, products_to_record = get_keywords_list(keywords_folder_path,
                                         starting_keywords_path,
                                         tiled_products_path,
                                         file_type=".csv")
 
-# Get the prompts
-completed_keywords_check = get_tiled_prompts(keywords_to_run, 
-                                products_list=products_to_record, 
-                                sqlite_db_path=sqlite_db_path,
-                                pickle_file_path=tiled_pickle_file_path)
+print("Keywords and products retrieved! Starting Run 1...")
 
-# Delete the pickle file if all went well
-if len(completed_keywords_check) == len(keywords_to_run):
-    print("All keywords have been processed! Deleting the pickle file...")
-    os.remove(tiled_pickle_file_path)
+num_runs = 10 # you can change this to the number of runs you need
+
+for i in range(num_runs):
+    print(f"Starting Run {i+1}...")
+    
+    completed_keywords_check = [] 
+
+    while len(completed_keywords_check) < len(keywords_to_run):
+        # Get the prompts
+        completed_keywords_check = get_prompts(keywords_to_run, 
+                                                     products_list=products_to_record, 
+                                                     sqlite_db_path=sqlite_db_path,
+                                                     pickle_file_path=tiled_pickle_file_path,
+                                                     generate_func=generate_portrait_prompts)
+
+        # Delete the pickle file if all went well
+        if len(completed_keywords_check) == len(keywords_to_run):
+            print("All keywords have been processed! Deleting the pickle file...")
+            os.remove(tiled_pickle_file_path)
+
+    print(f"Run {i+1} completed!")
+
+print("All runs completed!")
