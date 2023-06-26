@@ -42,7 +42,10 @@ prompts_for*txt
 *.pkl
 algoinspiration*db*
 2023*.txt
+0*.txt
+concat*txt
 prompt_path_info*.py
+etsy_pw.py
 
 # csv files
 *.csv
